@@ -1,0 +1,5 @@
+bool order
+---
+bool status
+---
+float32[] sequence
