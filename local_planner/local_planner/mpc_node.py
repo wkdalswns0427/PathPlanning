@@ -9,7 +9,7 @@ class MPCNode(Node):
     def __init__(self):
         super().__init__('mpc_node')
         # action name : localpath_action
-        # action_type : gole_interfaces/action/LocalPath
+        # action_type : pp_interfaces/action/LocalPath
         # ros2 action send_goal <action_name> <action_type> <values> --feedback
         MPCPlanner = MPCSampling()
         self._action_server = ActionServer(
@@ -25,12 +25,6 @@ class MPCNode(Node):
         self.get_logger().info('executing goal')
         feedback_msg = LocalPath.Feedback()
 
-        """
-        MPCSampling.get_control()
-        :param pose: the current pose [x, y, yaw] of the robot (n_rollouts, n_horizon, 3)
-        :param ref_idx: integer reference index in the global path
-        :return: control [x_dot, y_dot, yaw_dot] in the robot's frame
-        """
         self.control = MPCSampling.get_control()
         self.publish__cmdvel(self.control)
         result = LocalPath.Result()

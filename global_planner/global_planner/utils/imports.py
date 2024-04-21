@@ -7,5 +7,6 @@ import rclpy.publisher
 from rclpy.action import ActionServer
 from rclpy.node import Node
 
+import pathlib, random
 from std_msgs.msg import String, Bool, Float32
 from geometry_msgs.msg import PoseArray, Twist

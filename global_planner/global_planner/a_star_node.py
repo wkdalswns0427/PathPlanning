@@ -9,8 +9,8 @@ class AStarNode(Node):
 
     def __init__(self):
         super().__init__('a_star_node')
-        # action name : globalpp_action
-        # action_type : gole_interfaces/action/Globalpp
+        # action name : globalpath_action
+        # action_type : pp_interfaces/action/Globalpath
         # ros2 action send_goal <action_name> <action_type> <values> --feedback
         self._action_server = ActionServer(
             self,
@@ -19,13 +19,6 @@ class AStarNode(Node):
             self.actionCallback
         )
 
-        # self.subscription = self.create_subscription(
-        #     Bool, # std_msgs.msg.String
-        #     '/stx_etx',
-        #     self.listener_callback,
-        #     10)
-        # self.subscription  # prevent unused variable warning
-        # self.publisher_ = self.create_publisher(Bool, '/GolbalPath', 10)
 
     # Action Server return in response to request
     def actionCallback(self, goal_handle):
@@ -40,25 +33,6 @@ class AStarNode(Node):
 
         goal_handle.succeed()
         return result
-
-    ############################################################################
-    # def listener_callback(self, msg):
-    #     self.get_logger().info(f'I heard: {msg.data}')
-        
-    #     if msg.data:
-    #         rx, ry, res = astar_planner_go(os.path.join(os.environ["GOLE_CORE_CONFIG"], "global_pp.yaml"))
-    #         if res:
-    #             self.publish__globalpath()
-    #             print(rx); print(ry)
-    #         else:
-    #             print(res)
-    ############################################################################
-    # def publish__globalpath(self):
-    #     payload = Bool()
-    #     payload.data = True
-    #     self.publisher_.publish(payload)
-    #     self.get_logger().info('Publishing: "%s"' % payload.data)
-    ############################################################################
 
 
 def main(args=None):
