@@ -1,7 +1,5 @@
 from global_planner.utils.imports import *
 from global_planner.utils.config import *
-# from utils.imports import *
-# from utils.config import *
 
 class AStarPlanner:
 
@@ -71,15 +69,15 @@ class AStarPlanner:
             current = open_set[c_id]
 
             # # show graph
-            if show_animation:  # pragma: no cover
-                plt.plot(self.calc_grid_position(current.x, self.min_x),
-                         self.calc_grid_position(current.y, self.min_y), "xc")
-                # for stopping simulation with the esc key.
-                plt.gcf().canvas.mpl_connect('key_release_event',
-                                             lambda event: [exit(
-                                                 0) if event.key == 'escape' else None])
-                if len(closed_set.keys()) % 10 == 0:
-                    plt.pause(0.001)
+            # if show_animation:  # pragma: no cover
+            #     plt.plot(self.calc_grid_position(current.x, self.min_x),
+            #              self.calc_grid_position(current.y, self.min_y), "xc")
+            #     # for stopping simulation with the esc key.
+            #     plt.gcf().canvas.mpl_connect('key_release_event',
+            #                                  lambda event: [exit(
+            #                                      0) if event.key == 'escape' else None])
+            #     if len(closed_set.keys()) % 10 == 0:
+            #         plt.pause(0.001)
 
             if current.x == goal_node.x and current.y == goal_node.y:
                 print("Find goal")
@@ -212,167 +210,42 @@ class AStarPlanner:
 
         return motion
 
-class RandomTC:
-    def __init__(self, top_vertex : list, bottom_vertex : list) -> None:
-        self.ox = []
-        self.oy = []
+def get_mapData():
+    ox, oy = [], []
+    with open(os.path.join(os.environ["GOLE_CORE_ROS_SRC"], "gole_globalpath/gole_globalpath/map/map.yaml")) as f:
+        mapconfig = yaml.load(f, Loader=yaml.FullLoader)
+        resolution = mapconfig['resolution']
+        origin = mapconfig['origin']
 
-        self.obx = []
-        self.oby = []
-        self.top_vertex = top_vertex
-        self.bottom_vertex = bottom_vertex
+    image = Image.open(os.path.join(os.environ["GOLE_CORE_ROS_SRC"], "gole_globalpath/gole_globalpath/map/map.pgm"))
 
-##### map weighted set ##############################################################
-    def random_map(self, obstacle_number):
-        # generate random map within given boundary
-        self.ox.clear(), self.oy.clear()
-        # generate boundary
-        for i in range(self.bottom_vertex[0], self.top_vertex[0]):
-            self.ox.append(i)
-            self.oy.append(self.bottom_vertex[1])
-        for i in range(self.bottom_vertex[1], self.top_vertex[1]):
-            self.ox.append(self.top_vertex[0])
-            self.oy.append(i)
-        for i in range(self.bottom_vertex[0], self.top_vertex[0]+1):
-            self.ox.append(i)
-            self.oy.append(self.top_vertex[1])
-        for i in range(self.bottom_vertex[1], self.top_vertex[1]+1):
-            self.ox.append(self.bottom_vertex[0])
-            self.oy.append(i)
+    map_data = asarray(image)
+    ROW, COL = map_data.shape[0], map_data.shape[1]
+    for i in range(ROW):
+        for j in range(COL):
+            if map_data[i][j] < 100:
+                oy.append(abs(ROW-i))
+                ox.append(j)
+    return resolution, origin, ox, oy
 
-        #generate obstacles
-        for idx in range(obstacle_number):
-            x_range = [np.random.randint(self.bottom_vertex[0] + 1, self.top_vertex[0]),
-                       np.random.randint(self.bottom_vertex[0] + 1, self.top_vertex[0])]
-            y_range = [np.random.randint(self.bottom_vertex[1] + 1, self.top_vertex[1]),
-                       np.random.randint(self.bottom_vertex[1] + 1, self.top_vertex[1])]
-            if x_range[0] > x_range[1]:
-                x_range[0], x_range[1] = x_range[1], x_range[0]
-            if y_range[0] > y_range[1]:
-                y_range[0], y_range[1] = y_range[1], y_range[0]
-
-            for i in range(x_range[0], x_range[1]):
-                self.obx.append(i)
-                self.oby.append(y_range[0])
-            for i in range(y_range[0], y_range[1]):
-                self.obx.append(x_range[1])
-                self.oby.append(i)
-            for i in range(x_range[0], x_range[1]+1):
-                self.obx.append(i)
-                self.oby.append(y_range[1])
-            for i in range(y_range[0], y_range[1]+1):
-                self.obx.append(x_range[0])
-                self.oby.append(i)
-        
-        self.ox = self.ox + self.obx
-        self.oy = self.oy + self.oby
-
-        return self.ox, self.oy
-
-    def random_coordinate(self):
-        # generate random coordinates inside maze
-        flag = True
-        while flag:
-            tempx = np.random.randint(self.bottom_vertex[0] + 1, self.top_vertex[0])
-            tempy = np.random.randint(self.bottom_vertex[1] + 1, self.top_vertex[1])
-            if not (tempx in self.obx and tempy in self.oby):
-                break 
-        coordinate = [tempx, tempy]
-        return coordinate
-    
-#############################################################################################
-##### destination weighted set ##############################################################
-    def random_coordinate_d(self):
-        # generate random coordinates inside maze
-        self.coordinate = [np.random.randint(self.bottom_vertex[0] + 1, self.top_vertex[0]), np.random.randint(self.bottom_vertex[1] + 1, self.top_vertex[1])]
-        return self.coordinate
-    
-    def random_map_d(self, obstacle_number):
-        # generate random map within given boundary
-        self.ox.clear(), self.oy.clear()
-        # generate boundary
-        for i in range(self.bottom_vertex[0], self.top_vertex[0]):
-            self.ox.append(i)
-            self.oy.append(self.bottom_vertex[1])
-        for i in range(self.bottom_vertex[1], self.top_vertex[1]):
-            self.ox.append(self.top_vertex[0])
-            self.oy.append(i)
-        for i in range(self.bottom_vertex[0], self.top_vertex[0]+1):
-            self.ox.append(i)
-            self.oy.append(self.top_vertex[1])
-        for i in range(self.bottom_vertex[1], self.top_vertex[1]+1):
-            self.ox.append(self.bottom_vertex[0])
-            self.oy.append(i)
-
-        #generate obstacles
-        for idx in range(obstacle_number):
-            x_range = [np.random.randint(self.bottom_vertex[0] + 1, self.top_vertex[0]),
-                       np.random.randint(self.bottom_vertex[0] + 1, self.top_vertex[0])]
-            y_range = [np.random.randint(self.bottom_vertex[1] + 1, self.top_vertex[1]),
-                       np.random.randint(self.bottom_vertex[1] + 1, self.top_vertex[1])]
-            if x_range[0] > x_range[1]:
-                x_range[0], x_range[1] = x_range[1], x_range[0]
-            if y_range[0] > y_range[1]:
-                y_range[0], y_range[1] = y_range[1], y_range[0]
-
-            for i in range(x_range[0], x_range[1]):
-                self.obx.append(i)
-                self.oby.append(y_range[0])
-            for i in range(y_range[0], y_range[1]):
-                self.obx.append(x_range[1])
-                self.oby.append(i)
-            for i in range(x_range[0], x_range[1]+1):
-                self.obx.append(i)
-                self.oby.append(y_range[1])
-            for i in range(y_range[0], y_range[1]+1):
-                self.obx.append(x_range[0])
-                self.oby.append(i)
-        
-        self.ox = self.ox + self.obx
-        self.oy = self.oy + self.oby
-
-        return self.ox, self.oy
-#############################################################################################
-
-# Params : top_vertex : list = [60,60], bottom_vertex : list = [0,0], resolution  : float = 2.0, robot_radius : float= 1.0, obstacle_num : int = 5
 def astar_planner_go(yaml_path_pln):
     with open(yaml_path_pln) as f:
         print("reading planner config: " + yaml_path_pln + "...")
         planner_config = yaml.load(f, Loader=yaml.FullLoader)
 
-    # map generator
-    map_gen = RandomTC(planner_config['parameters']['top_vertex'], planner_config['parameters']['bottom_vertex'])
-    ox, oy = map_gen.random_map(planner_config['parameters']['obstacle_num'])
-    start = map_gen.random_coordinate()
-    end = map_gen.random_coordinate()
+    resolution, origin, ox, oy = get_mapData()
+    start = [150,150]
+    end = [50,50]
 
-    if show_animation:  # pragma: no cover
-        plt.plot(ox, oy, ".k")
-        plt.plot(start[0], start[1], "og")
-        plt.plot(end[0], end[1], "xb")
-        plt.grid(True)
-        plt.axis("equal")
-    
-    a_star = AStarPlanner(ox, oy, planner_config['parameters']['grid_size'], planner_config['parameters']['robot_radius'])
+    grid_size = int(planner_config['parameters']['grid_size']/resolution)
+    a_star = AStarPlanner(ox, oy, grid_size, planner_config['parameters']['robot_radius'])
     rx, ry, res = a_star.planning(start[0], start[1], end[0], end[1]) # type : list, list
 
-    # show path
-    if show_animation:  # pragma: no cover
-        plt.plot(rx, ry, "-r")
-        plt.pause(0.001)
-        plt.show(block=False)
-        plt.pause(3)
-        print("closing")
-        plt.close('all')
-
-    return rx, ry, res
-    
+    return rx, ry, res   
 
 # global_pp_yaml
 def main():
     astar_planner_go("global_path.yaml")
-   
-
 
 if __name__ == '__main__':
     main()

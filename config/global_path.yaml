@@ -1,0 +1,16 @@
+parameters:
+  grid_size : 0.3 # [m] resolution
+  robot_radius : 0.1 # [m]
+
+potentialfield:
+  top_vertex : [200,200] #[int, int]
+  bottom_vertex : [-10, -30] #[int, int]
+  grid_size : 3.0 # [m] resolution
+  robot_radius : 1.0 # [m]
+  obstacle_num : 5
+
+  KP : 5.0  # attractive potential gain
+  ETA : 100.0  # repulsive potential gain
+  AREA_WIDTH : 30.0  # potential area width [m]
+  OSCILLATIONS_DETECTION_LENGTH : 3
+
