@@ -212,12 +212,12 @@ class AStarPlanner:
 
 def get_mapData():
     ox, oy = [], []
-    with open(os.path.join(os.environ["GOLE_CORE_ROS_SRC"], "gole_globalpath/gole_globalpath/map/map.yaml")) as f:
+    with open(os.path.join(YAML_PATH)) as f:
         mapconfig = yaml.load(f, Loader=yaml.FullLoader)
         resolution = mapconfig['resolution']
         origin = mapconfig['origin']
 
-    image = Image.open(os.path.join(os.environ["GOLE_CORE_ROS_SRC"], "gole_globalpath/gole_globalpath/map/map.pgm"))
+    image = Image.open(os.path.join(YAML_PATH))
 
     map_data = asarray(image)
     ROW, COL = map_data.shape[0], map_data.shape[1]
