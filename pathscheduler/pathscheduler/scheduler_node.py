@@ -57,9 +57,20 @@ class ScheduleSubscriber(Node):
     def get_result_callback(self, future):
         result = future.result().result
         if self.global_flag == 1:
-            self.get_logger().info(f'Result: {result.sequence_x}')
-            self.get_logger().info(f'Result: {result.sequence_y}')
-            np.save(self.trajectory_path+"reference.npy", [result.sequence_x,result.sequence_y])
+            temp = []
+            for i in reversed(range(len(result.sequence_x))):
+                tempx = round(result.sequence_x[i],3)
+                tempy = round(result.sequence_y[i],3)
+                if i > 0:
+                    tempx_n = round(result.sequence_x[i-1],3)
+                    tempy_n = round(result.sequence_y[i-1],3)
+                    tempw = round(np.arctan2(tempx-tempx_n,tempy-tempy_n),3)
+                else:
+                    tempw = 0
+
+                temp.append([tempx, tempy, tempw])
+            self.get_logger().info(f'Result: {temp}')
+            np.save(self.trajectory_path+"reference.npy", temp)
             self.global_flag = 0
         elif self.local_flag == 1:
             self.get_logger().info(f'Result: {result.status}')

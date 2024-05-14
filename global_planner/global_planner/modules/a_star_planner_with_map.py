@@ -1,6 +1,8 @@
 from global_planner.utils.imports import *
 from global_planner.utils.config import *
 
+trajectory_path = "../config/"
+
 class AStarPlanner:
 
     def __init__(self, ox, oy, resolution, rr):
@@ -136,13 +138,6 @@ class AStarPlanner:
         return d
 
     def calc_grid_position(self, index, min_position):
-        """
-        calc grid position
-
-        :param index:
-        :param min_position:
-        :return:
-        """
         pos = index * self.resolution + min_position
         return pos
 
@@ -228,20 +223,36 @@ def get_mapData():
                 ox.append(j)
     return resolution, origin, ox, oy
 
-def astar_planner_go(yaml_path_pln):
+def astar_planner_go(yaml_path_pln, start = [0,0], goal = [0,0]):
     with open(yaml_path_pln) as f:
         print("reading planner config: " + yaml_path_pln + "...")
         planner_config = yaml.load(f, Loader=yaml.FullLoader)
+        
 
     resolution, origin, ox, oy = get_mapData()
-    start = [150,150]
-    end = [50,50]
-
+    start = planner_config['parameters']['start']
+    goal = planner_config['parameters']['goal']
+    if show_animation:  # pragma: no cover
+        plt.plot(ox, oy, ".k")
+        plt.plot(start[0], start[1], "og")
+        plt.plot(goal[0], goal[1], "xb")
+        plt.grid(True)
+        plt.axis("equal")
+    
     grid_size = int(planner_config['parameters']['grid_size']/resolution)
-    a_star = AStarPlanner(ox, oy, grid_size, planner_config['parameters']['robot_radius'])
-    rx, ry, res = a_star.planning(start[0], start[1], end[0], end[1]) # type : list, list
+    a_star = AStarPlanner(ox, oy, grid_size, planner_config['parameters']['robot_radius']/resolution)
+    rx, ry, res = a_star.planning(start[0], start[1], goal[0], goal[1]) # type : list, list
+    if show_animation:  # pragma: no cover
+        plt.plot(rx, ry, "-r")
+        plt.savefig(trajectory_path+'trajectory.png')
+        plt.close('all')
+
+    for i in range(len(rx)):
+        rx[i] = round(rx[i]*resolution,3)
+        ry[i] = round(ry[i]*resolution,3)
 
     return rx, ry, res   
+ 
 
 # global_pp_yaml
 def main():
